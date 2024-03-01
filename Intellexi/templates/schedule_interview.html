@@ -1,0 +1,188 @@
+<!-- home.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+.success-btn {
+    padding: 15px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #f9f9f9;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    border: 5px solid green;
+}
+
+.popup-content {
+    text-align: center;
+    padding:10px;
+    margin:10px;
+    font-size: 20px;
+}
+
+.close-btn {
+    position: absolute;
+    padding:4px;
+    top: 10px;
+    right: 10px;
+    font-size: 25px;
+    cursor: pointer;
+    color: red;
+}
+
+/* output contet div */
+        .content {
+            display: none;
+            max-width:500px;
+            word-wrap: normal;
+        }
+
+        .content.active-section {
+            display: block;
+            max-width:500px;
+            word-wrap: normal;
+        }
+    .section-label{
+        border-bottom: 3px solid blue;
+    }
+
+</style>
+<!-- <h1>upload docs Page</h1> -->
+<main>
+    <div class="container">
+        <form class="custom-form" id="uploadForm">
+            <!-- Your form content -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="drag-drop-area" id="dragDropArea">
+                        <label for="fileInput" id="fileInputLabel">Click or drag and drop files here</label>
+                        <!-- Hidden file input -->
+                        <input type="file" accept=".pdf,.jpg,.JPEG,.png,.webp" id="fileInput" onchange="handleFiles(event)">
+                    </div>
+                    <div id="fileError" style="color: red;"></div>
+                </div>
+            </div>
+
+
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="form-group">
+                        <label for="documentCategory">Interview Time</label>
+                        <input type="datetime-local" class="form-control text-field" name="interviewTime" id="interviewTime" required>
+                    </div>
+                </div>
+                
+            </div>
+
+            <div style="padding-top: 10px;" class="form-buttons">
+                <button class="cancel-btn" onclick="resetAndGoHome(event)">Cancel</button>
+                <button class="save-btn">Save</button>
+            </div>
+        </form>
+    </div>
+    </main>
+    <div class="popup" id="successPopup">
+        <div class="popup-content">
+            <span class="close-btn" onclick="closeSuccessPopup()">&times;</span>
+            <p>Success! Your response has been received and data is stored.</p>
+        </div>
+      </div>
+      <div class="popup" id="fetchingData">
+        <div class="popup-content">
+            <span class="close-btn" onclick="closefetchingDataPopup()">&times;</span>
+            <p><b>Hang on!</b> While we process your request and retrieve your response from the backend.</p>
+        </div>
+      </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+      
+    <script>
+      function handleFiles(event) {
+    const fileList = event.target.files;
+    if (fileList.length > 0) {
+        displayFiles(fileList);
+    }
+}
+function updateFileInputLabel(isValid, fileName) {
+    fileLabel.textContent = isValid ? fileName : 'No files selected.';
+    fileLabel.style.border = isValid ? '2px solid green' : '2px solid red';
+}
+
+function displayFiles(files) {
+    if (files.length > 0) {
+        const fileName = files[0].name;
+        updateFileInputLabel(true, fileName);
+    } else {
+        updateFileInputLabel(false);
+    }
+}
+
+    const uploadForm=document.getElementById('uploadForm')
+    uploadForm.addEventListener('submit',(e)=>{
+        e.preventDefault()
+        if(validateForm()){
+            document.getElementById('fileInputLabel').style.border='2px solid green'
+            const formdata=new FormData(uploadForm)
+            formdata.append('file',document.getElementById('fileInput').files[0])
+            fetch("/create_interview", {
+          method: "POST",
+          body: formdata,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.status){
+                showSuccessPopup()
+              setInterval(()=>{
+              closeSuccessPopup()
+              },2000)
+              uploadForm.reset()
+              document.getElementById('fileInput').value=''
+              document.getElementById('fileInputLabel').textContent="Click or drag and drop files here<"
+            }else{
+                alert("there is an error")
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+    }else{
+        document.getElementById('fileInputLabel').style.border='2px solid red'
+    }
+
+    })
+
+    function validateForm() {
+        const fileInput = document.getElementById('fileInput');
+        const fileError = document.getElementById('fileError');
+
+        if (!fileInput.files || fileInput.files.length === 0) {
+            fileLabel.textContent = 'Please select a file.';
+            return false; 
+        }
+        return true; 
+    }
+
+    function showSuccessPopup() {
+    document.getElementById('successPopup').style.display = 'block';
+}
+
+function closeSuccessPopup() {
+    document.getElementById('successPopup').style.display = 'none';
+}
+
+
+function resetAndGoHome(event){
+    window.location.reload();
+}
+</script>
+
+{% endblock %}

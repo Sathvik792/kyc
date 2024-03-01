@@ -1,0 +1,41 @@
+# Python bytecode
+__pycache__/
+
+# Virtual environment
+venv/
+env/
+*.env
+
+# Compiled Python files
+*.pyc
+*.pyo
+*.pyd
+
+# IDE files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*.swo
+*.tmproj
+*.tmp
+*~
+*.bak
+*.cache
+*.log
+
+# Distribution directories
+dist/
+build/
+*.egg-info/
+
+# Local development settings
+*.sqlite3
+*.db
+
+# Python environment configuration
+pip-log.txt
+pip-delete-this-directory.txt
